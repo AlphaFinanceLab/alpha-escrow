@@ -8,6 +8,11 @@ def test_request_emergency_withdraw_by_alpha_gov(escrow, alphaGov):
     assert tx.timestamp == escrow.emergencyRequestTime(), "incorrect request time"
 
 
+def test_request_emergency_withdraw_by_cream_gov(escrow, creamGov):
+    with brownie.reverts("only Alpha governor"):
+        escrow.requestEmergencyWithdraw({"from": creamGov})
+
+
 def test_request_emergency_withdraw_by_other_user(escrow, alice):
     with brownie.reverts("only Alpha governor"):
         escrow.requestEmergencyWithdraw({"from": alice})
@@ -16,13 +21,13 @@ def test_request_emergency_withdraw_by_other_user(escrow, alice):
 def test_cancel_request_emergency_withdraw_by_alpha_gov(escrow, alphaGov):
     escrow.requestEmergencyWithdraw({"from": alphaGov})
     escrow.cancelEmergencyWithdraw({"from": alphaGov})
-    assert escrow.emergencyRequestTime() == 0, "incorrect request time after calceled"
+    assert escrow.emergencyRequestTime() == 0, "incorrect request time after canceled"
 
 
 def test_cancel_request_emergency_withdraw_by_cream_gov(escrow, creamGov, alphaGov):
     escrow.requestEmergencyWithdraw({"from": alphaGov})
     escrow.cancelEmergencyWithdraw({"from": creamGov})
-    assert escrow.emergencyRequestTime() == 0, "incorrect request time after calceled"
+    assert escrow.emergencyRequestTime() == 0, "incorrect request time after canceled"
 
 
 def test_cancel_request_emergency_withdraw_by_other_user(escrow, alphaGov, alice):

@@ -8,7 +8,7 @@ def test_recover_erc20_from_escrow(escrow, mock_token, alphaGov, bob):
     gov_before = mock_token.balanceOf(alphaGov)
     escrow.recover(mock_token, {"from": alphaGov})
     gov_after = mock_token.balanceOf(alphaGov)
-    assert gov_after - gov_before == amount, "recover erc20 token fail"
+    assert gov_after - gov_before == amount, "incorrect erc20 recovery amount"
 
 
 def test_recover_alpha_from_escrow(escrow, alpha, alphaGov, bob):

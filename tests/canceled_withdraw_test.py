@@ -14,8 +14,8 @@ def test_cancel_withdraw_receipt_by_alpha_gov(
     escrow.cancelWithdrawReceipt(id, {"from": alphaGov})
 
     amount, withdraw_time, status = escrow.receipts(id)
-    assert amount == withdraw_amount, "invelid receipt's withdraw amount"
-    assert withdraw_time == expected_withdraw_time, "invelid receipt's withdraw time"
+    assert amount == withdraw_amount, "invalid receipt's withdraw amount"
+    assert withdraw_time == expected_withdraw_time, "invalid receipt's withdraw time"
     assert status == status_canceled, "invalid receipt's status"
 
 
@@ -27,8 +27,8 @@ def test_cancel_withdraw_receipt_by_cream_gov(escrow, creamGov, status_canceled)
     escrow.cancelWithdrawReceipt(id, {"from": creamGov})
 
     amount, withdraw_time, status = escrow.receipts(id)
-    assert amount == withdraw_amount, "invelid receipt's withdraw amount"
-    assert withdraw_time == expected_withdraw_time, "invelid receipt's withdraw time"
+    assert amount == withdraw_amount, "invalid receipt's withdraw amount"
+    assert withdraw_time == expected_withdraw_time, "invalid receipt's withdraw time"
     assert status == status_canceled, "invalid receipt's status"
 
 

@@ -88,7 +88,7 @@ contract AlphaEscrow is ReentrancyGuard {
   /// note: ALPHA governor can cancel withdrawal receipt that still in timelock duration.
   /// @param _receiptId The ID of withdrawal receipt to cancel
   function cancelWithdrawReceipt(uint _receiptId) external nonReentrant onlyAlphaGov {
-    WithdrawReceipt storage receipt = receipts[withdrawReceiptId];
+    WithdrawReceipt storage receipt = receipts[_receiptId];
     require(receipt.status == STATUS_PENDING, 'only pending receipt can be cancel');
     require(
       block.timestamp < receipt.withdrawTime.add(TIMELOCK_DURATION),

@@ -1,6 +1,5 @@
-from brownie import accounts, chain
+from brownie import chain
 from brownie import AlphaEscrow
-from brownie.exceptions import VirtualMachineError
 import brownie
 
 
@@ -9,26 +8,24 @@ def test_cancel_withdraw_receipt_by_alpha_gov(
 ):
     withdraw_amount = 10 ** 18
     id = escrow.nextReceiptId()
-    expected_withdraw_time = chain.time()
-    escrow.withdraw(withdraw_amount, {"from": creamGov})
+    tx = escrow.withdraw(withdraw_amount, {"from": creamGov})
     escrow.cancelWithdrawReceipt(id, {"from": alphaGov})
 
     amount, withdraw_time, status = escrow.receipts(id)
     assert amount == withdraw_amount, "invalid receipt's withdraw amount"
-    assert withdraw_time == expected_withdraw_time, "invalid receipt's withdraw time"
+    assert withdraw_time == tx.timestamp, "invalid receipt's withdraw time"
     assert status == status_canceled, "invalid receipt's status"
 
 
 def test_cancel_withdraw_receipt_by_cream_gov(escrow, creamGov, status_canceled):
     withdraw_amount = 10 ** 18
     id = escrow.nextReceiptId()
-    expected_withdraw_time = chain.time()
-    escrow.withdraw(withdraw_amount, {"from": creamGov})
+    tx = escrow.withdraw(withdraw_amount, {"from": creamGov})
     escrow.cancelWithdrawReceipt(id, {"from": creamGov})
 
     amount, withdraw_time, status = escrow.receipts(id)
     assert amount == withdraw_amount, "invalid receipt's withdraw amount"
-    assert withdraw_time == expected_withdraw_time, "invalid receipt's withdraw time"
+    assert withdraw_time == tx.timestamp, "invalid receipt's withdraw time"
     assert status == status_canceled, "invalid receipt's status"
 
 

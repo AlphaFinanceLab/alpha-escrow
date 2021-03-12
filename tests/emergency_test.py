@@ -1,12 +1,11 @@
-from brownie import accounts, chain
+from brownie import chain
 from brownie import AlphaEscrow
 import brownie
 
 
 def test_request_emergency_withdraw_by_alpha_gov(escrow, alphaGov):
-    expected_time = chain.time()
-    escrow.requestEmergencyWithdraw({"from": alphaGov})
-    assert expected_time == escrow.emergencyRequestTime(), "incorrect request time"
+    tx = escrow.requestEmergencyWithdraw({"from": alphaGov})
+    assert tx.timestamp == escrow.emergencyRequestTime(), "incorrect request time"
 
 
 def test_request_emergency_withdraw_by_other_user(escrow, alice):

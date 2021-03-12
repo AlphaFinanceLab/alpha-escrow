@@ -1,18 +1,17 @@
-from brownie import accounts, chain
+from brownie import chain
 from brownie import AlphaEscrow
-from brownie.exceptions import VirtualMachineError
 import brownie
 
 
 def test_claim_withdraw_receipt_after_7_days_by_cream_gov(escrow, alpha, creamGov):
     withdraw_amount = 10 ** 18
     id = escrow.nextReceiptId()
-    alphaBefore = alpha.balanceOf(creamGov)
     escrow.withdraw(withdraw_amount, {"from": creamGov})
 
     # wait 7 days
     chain.sleep(7 * 86400)
 
+    alphaBefore = alpha.balanceOf(creamGov)
     escrow.claim(id, {"from": creamGov})
     alphaAfter = alpha.balanceOf(creamGov)
 

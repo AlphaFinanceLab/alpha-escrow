@@ -6,12 +6,11 @@ import brownie
 def test_withdraw(escrow, creamGov, status_pending):
     withdraw_amount = 10 ** 18
     id = escrow.nextReceiptId()
-    expected_withdraw_time = chain.time()
-    escrow.withdraw(withdraw_amount, {"from": creamGov})
+    tx = escrow.withdraw(withdraw_amount, {"from": creamGov})
     amount, withdraw_time, status = escrow.receipts(id)
 
     assert amount == withdraw_amount, "invalid receipt's amount"
-    assert withdraw_time == expected_withdraw_time, "invalid receipt's withdraw time"
+    assert withdraw_time == tx.timestamp, "invalid receipt's withdraw time"
     assert status == status_pending, "invalid receipt's status"
 
 

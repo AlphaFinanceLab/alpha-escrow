@@ -79,7 +79,7 @@ contract AlphaEscrow is ReentrancyGuard {
   }
 
   /// @dev Claim ALPHA using withdrawal receipt by CREAM governor
-  /// note: CREAM governor can claim withdraw receipt afters timelock duration.
+  /// note: CREAM governor can claim withdraw receipt after timelock duration.
   /// @param _receiptId The ID of withdrawal receipt to claim ALPHA
   function claim(uint _receiptId) external nonReentrant onlyCreamGov {
     WithdrawReceipt storage receipt = receipts[_receiptId];

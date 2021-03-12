@@ -46,6 +46,14 @@ contract AlphaEscrow is ReentrancyGuard {
     _;
   }
 
+  modifier onlyGov() {
+    require(
+      msg.sender == creamGovernor || msg.sender == alphaGovernor,
+      'only Cream or Alpha governor'
+    );
+    _;
+  }
+
   constructor(
     address _alpha,
     address _alphaGovernor,
@@ -69,7 +77,7 @@ contract AlphaEscrow is ReentrancyGuard {
   }
 
   /// @dev Claim ALPHA using withdrawal receipt by CREAM governor
-  /// note: CREAM governor can withdraw receipt afters timelock duration.
+  /// note: CREAM governor can claim withdraw receipt afters timelock duration.
   /// @param _receiptId The ID of withdrawal receipt to claim ALPHA
   function claim(uint _receiptId) external nonReentrant onlyCreamGov {
     WithdrawReceipt storage receipt = receipts[_receiptId];
@@ -86,16 +94,11 @@ contract AlphaEscrow is ReentrancyGuard {
     emit Claim(_receiptId, receipt.amount, msg.sender);
   }
 
-  /// @dev Cancel withdrawal receipt by ALPHA governor.
-  /// note: ALPHA governor can cancel withdrawal receipt that still in timelock duration.
+  /// @dev Cancel withdrawal receipt by CREAM or ALPHA governor.
   /// @param _receiptId The ID of withdrawal receipt to cancel
-  function cancelWithdrawReceipt(uint _receiptId) external nonReentrant onlyAlphaGov {
+  function cancelWithdrawReceipt(uint _receiptId) external nonReentrant onlyGov {
     WithdrawReceipt storage receipt = receipts[_receiptId];
-    require(receipt.status == STATUS_PENDING, 'only pending receipt can be cancel');
-    require(
-      block.timestamp < receipt.withdrawTime.add(TIMELOCK_DURATION),
-      'cannot cancel receipt that exceed timelock'
-    );
+    require(receipt.status == STATUS_PENDING, 'only pending receipt can be canceled');
     receipt.status = STATUS_CANCELED;
     emit Cancel(_receiptId, msg.sender);
   }
@@ -113,8 +116,8 @@ contract AlphaEscrow is ReentrancyGuard {
     emit RequestEmergency(msg.sender, block.timestamp);
   }
 
-  /// @dev Cancel emergency withdraw ALPHA by CREAM governor only
-  function cancelEmergencyWithdraw() external nonReentrant onlyCreamGov {
+  /// @dev Cancel emergency withdraw ALPHA by CREAM or ALPHA governor
+  function cancelEmergencyWithdraw() external nonReentrant onlyGov {
     emergencyRequestTime = 0;
     emit CancelEmergency(msg.sender, block.timestamp);
   }
@@ -124,7 +127,7 @@ contract AlphaEscrow is ReentrancyGuard {
     require(
       emergencyRequestTime > 0 &&
         block.timestamp >= emergencyRequestTime.add(EMERGENCY_WITHDRAW_TIMELOCK_DURATION),
-      'invalid time to claim emergency withdrawn ALPHA'
+      'invalid time to claim requested ALPHA'
     );
     emergencyRequestTime = 0;
     uint amount = alpha.balanceOf(address(this));

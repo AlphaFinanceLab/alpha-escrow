@@ -75,7 +75,7 @@ contract AlphaEscrow is ReentrancyGuard {
     receipt.withdrawTime = block.timestamp;
     receipt.status = STATUS_PENDING;
     nextReceiptId++;
-    emit Withdraw(nextReceiptId, _amount, block.timestamp, msg.sender);
+    emit Withdraw(nextReceiptId - 1, _amount, block.timestamp, msg.sender);
   }
 
   /// @dev Claim ALPHA using withdrawal receipt by CREAM governor

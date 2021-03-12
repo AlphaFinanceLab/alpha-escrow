@@ -68,6 +68,8 @@ contract AlphaEscrow is ReentrancyGuard {
   /// @param _amount Amount of ALPHA to withdraw
   function withdraw(uint _amount) external nonReentrant onlyCreamGov {
     require(_amount > 0, 'cannot withdraw 0 alpha');
+    alphaBalance = alpha.balanceOf(address(this));
+    require(amount <= alphaBalance, 'insufficient ALPHA to withdraw');
     WithdrawReceipt storage receipt = receipts[nextReceiptId];
     receipt.amount = _amount;
     receipt.withdrawTime = block.timestamp;

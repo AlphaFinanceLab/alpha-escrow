@@ -32,7 +32,7 @@ contract AlphaEscrow is ReentrancyGuard {
   IERC20 public alpha;
   address public alphaGovernor;
   address public creamGovernor;
-  uint public withdrawReceiptId;
+  uint public nextReceiptId;
   mapping(uint => WithdrawReceipt) public receipts;
   uint public emergencyRequestTime;
 
@@ -54,26 +54,25 @@ contract AlphaEscrow is ReentrancyGuard {
     alpha = IERC20(_alpha);
     alphaGovernor = _alphaGovernor;
     creamGovernor = _creamGovernor;
-    withdrawReceiptId = 0;
   }
 
   /// @dev Create withdraw receipt by CREAM governor
   /// @param _amount Amount of ALPHA to withdraw
   function withdraw(uint _amount) external nonReentrant onlyCreamGov {
     require(_amount > 0, 'cannot withdraw 0 alpha');
-    WithdrawReceipt storage receipt = receipts[withdrawReceiptId];
+    WithdrawReceipt storage receipt = receipts[nextReceiptId];
     receipt.amount = _amount;
     receipt.withdrawTime = block.timestamp;
     receipt.status = STATUS_PENDING;
-    withdrawReceiptId++;
-    emit Withdraw(withdrawReceiptId, _amount, block.timestamp, msg.sender);
+    nextReceiptId++;
+    emit Withdraw(nextReceiptId, _amount, block.timestamp, msg.sender);
   }
 
   /// @dev Claim ALPHA using withdrawal receipt by CREAM governor
   /// note: CREAM governor can withdraw receipt afters timelock duration.
   /// @param _receiptId The ID of withdrawal receipt to claim ALPHA
   function claim(uint _receiptId) external nonReentrant onlyCreamGov {
-    WithdrawReceipt storage receipt = receipts[withdrawReceiptId];
+    WithdrawReceipt storage receipt = receipts[nextReceiptId];
     require(receipt.status == STATUS_PENDING, 'claim/receipt has cancelled or claimed');
     require(
       block.timestamp >= receipt.withdrawTime.add(TIMELOCK_DURATION),

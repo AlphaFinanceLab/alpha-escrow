@@ -18,7 +18,7 @@ contract AlphaEscrow is ReentrancyGuard {
   event ClaimEmergenty(address gov, uint amount, uint claimTime);
 
   uint public constant STATUS_PENDING = 1;
-  uint public constant STATUS_CANCELLED = 2;
+  uint public constant STATUS_CANCELED = 2;
   uint public constant STATUS_CLAIMED = 3;
   uint public constant TIMELOCK_DURATION = 7 days;
   uint public constant EMERGENCY_WITHDRAW_TIMELOCK_DURATION = 30 days;
@@ -73,7 +73,7 @@ contract AlphaEscrow is ReentrancyGuard {
   /// @param _receiptId The ID of withdrawal receipt to claim ALPHA
   function claim(uint _receiptId) external nonReentrant onlyCreamGov {
     WithdrawReceipt storage receipt = receipts[_receiptId];
-    require(receipt.status == STATUS_PENDING, 'receipt has been cancelled or claimed');
+    require(receipt.status == STATUS_PENDING, 'receipt has been canceled or claimed');
     require(
       block.timestamp >= receipt.withdrawTime.add(TIMELOCK_DURATION),
       'invalid time to claim'
@@ -93,7 +93,7 @@ contract AlphaEscrow is ReentrancyGuard {
       block.timestamp < receipt.withdrawTime.add(TIMELOCK_DURATION),
       'cannot cancel receipt that exceed timelock'
     );
-    receipt.status = STATUS_CANCELLED;
+    receipt.status = STATUS_CANCELED;
     emit Cancel(_receiptId, msg.sender);
   }
 

@@ -72,8 +72,8 @@ contract AlphaEscrow is ReentrancyGuard {
   /// note: CREAM governor can withdraw receipt afters timelock duration.
   /// @param _receiptId The ID of withdrawal receipt to claim ALPHA
   function claim(uint _receiptId) external nonReentrant onlyCreamGov {
-    WithdrawReceipt storage receipt = receipts[nextReceiptId];
-    require(receipt.status == STATUS_PENDING, 'claim/receipt has cancelled or claimed');
+    WithdrawReceipt storage receipt = receipts[_receiptId];
+    require(receipt.status == STATUS_PENDING, 'receipt has been cancelled or claimed');
     require(
       block.timestamp >= receipt.withdrawTime.add(TIMELOCK_DURATION),
       'invalid time to claim'

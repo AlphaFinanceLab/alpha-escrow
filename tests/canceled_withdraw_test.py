@@ -63,8 +63,6 @@ def test_cancel_canceled_withdraw_receipt(escrow, creamGov, status_canceled):
 
 def test_cancel_uninitialized_withdraw_receipt(escrow, creamGov, status_canceled):
     id = 1000
-    withdraw_amount = 10 ** 18
-    escrow.withdraw(withdraw_amount, {"from": creamGov})
 
-    with brownie.reverts("only pending receipt can be canceled"):
+    with brownie.reverts("receipt does not exist"):
         escrow.cancelWithdrawReceipt(id, {"from": creamGov})

@@ -9,13 +9,13 @@ contract AlphaEscrow is ReentrancyGuard {
   using SafeERC20 for IERC20;
   using SafeMath for uint;
 
-  event Withdraw(uint indexed receiptId, uint amount, uint withdrawTime, address gov);
+  event Withdraw(uint indexed receiptId, uint amount, address gov);
   event Claim(uint indexed receiptId, uint amount, address gov);
   event Cancel(uint indexed receiptId, address gov);
   event Unlock(address gov, uint amount);
-  event RequestEmergency(address gov, uint requestTime);
-  event CancelEmergency(address gov, uint cancelTime);
-  event ClaimEmergenty(address gov, uint amount, uint claimTime);
+  event RequestEmergency(address gov);
+  event CancelEmergency(address gov);
+  event ClaimEmergenty(address gov, uint amount);
 
   uint public constant STATUS_PENDING = 1;
   uint public constant STATUS_CANCELED = 2;
@@ -75,7 +75,7 @@ contract AlphaEscrow is ReentrancyGuard {
     receipt.withdrawTime = block.timestamp;
     receipt.status = STATUS_PENDING;
     nextReceiptId++;
-    emit Withdraw(nextReceiptId - 1, _amount, block.timestamp, msg.sender);
+    emit Withdraw(nextReceiptId - 1, _amount, msg.sender);
   }
 
   /// @dev Claim ALPHA using withdrawal receipt by CREAM governor
@@ -83,6 +83,7 @@ contract AlphaEscrow is ReentrancyGuard {
   /// @param _receiptId The ID of withdrawal receipt to claim ALPHA
   function claim(uint _receiptId) external nonReentrant onlyCreamGov {
     WithdrawReceipt storage receipt = receipts[_receiptId];
+    require(_receiptId < nextReceiptId, 'receipt does not exist');
     require(
       receipt.status == STATUS_PENDING,
       'receipt has been canceled, claimed, or not yet initialized'
@@ -100,6 +101,7 @@ contract AlphaEscrow is ReentrancyGuard {
   /// @param _receiptId The ID of withdrawal receipt to cancel
   function cancelWithdrawReceipt(uint _receiptId) external nonReentrant onlyGov {
     WithdrawReceipt storage receipt = receipts[_receiptId];
+    require(_receiptId < nextReceiptId, 'receipt does not exist');
     require(receipt.status == STATUS_PENDING, 'only pending receipt can be canceled');
     receipt.status = STATUS_CANCELED;
     emit Cancel(_receiptId, msg.sender);
@@ -115,13 +117,13 @@ contract AlphaEscrow is ReentrancyGuard {
   /// @dev Emergency withdraw ALPHA from this contract by ALPHA governor
   function requestEmergencyWithdraw() external nonReentrant onlyAlphaGov {
     emergencyRequestTime = block.timestamp;
-    emit RequestEmergency(msg.sender, block.timestamp);
+    emit RequestEmergency(msg.sender);
   }
 
   /// @dev Cancel emergency withdraw ALPHA by CREAM or ALPHA governor
   function cancelEmergencyWithdraw() external nonReentrant onlyGov {
     emergencyRequestTime = 0;
-    emit CancelEmergency(msg.sender, block.timestamp);
+    emit CancelEmergency(msg.sender);
   }
 
   /// @dev Claim emergency withdraw ALPHA by ALPHA governor
@@ -134,7 +136,7 @@ contract AlphaEscrow is ReentrancyGuard {
     emergencyRequestTime = 0;
     uint amount = alpha.balanceOf(address(this));
     alpha.safeTransfer(msg.sender, amount);
-    emit ClaimEmergenty(msg.sender, amount, block.timestamp);
+    emit ClaimEmergenty(msg.sender, amount);
   }
 
   /// @dev Recover any ERC20 token except ALPHA from this contract

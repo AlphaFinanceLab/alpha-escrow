@@ -79,14 +79,9 @@ def test_claim_claimed_withdraw_receipt(escrow, creamGov):
 
 
 def test_claim_uninitialized_withdraw_receipt(escrow, creamGov):
-    withdraw_amount = 10 ** 18
     id = 1000
-    escrow.withdraw(withdraw_amount, {"from": creamGov})
 
-    # wait 7 days
-    chain.sleep(7 * 86400)
-
-    with brownie.reverts("receipt has been canceled, claimed, or not yet initialized"):
+    with brownie.reverts("receipt does not exist"):
         escrow.claim(id, {"from": creamGov})
 
 

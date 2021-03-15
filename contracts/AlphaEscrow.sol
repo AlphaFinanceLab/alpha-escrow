@@ -13,15 +13,15 @@ contract AlphaEscrow is ReentrancyGuard {
   event Claim(uint indexed receiptId, uint amount, address gov);
   event Cancel(uint indexed receiptId, address gov);
   event Unlock(address gov, uint amount);
-  event RequestEmergency(address gov);
-  event CancelEmergency(address gov);
-  event ClaimEmergenty(address gov, uint amount);
+  event RequestLastResort(address gov);
+  event CancelLastResort(address gov);
+  event ClaimLastResort(address gov, uint amount);
 
   uint public constant STATUS_PENDING = 1;
   uint public constant STATUS_CANCELED = 2;
   uint public constant STATUS_CLAIMED = 3;
   uint public constant TIMELOCK_DURATION = 7 days;
-  uint public constant EMERGENCY_WITHDRAW_TIMELOCK_DURATION = 30 days;
+  uint public constant LAST_RESORT_TIMELOCK_DURATION = 30 days;
 
   struct WithdrawReceipt {
     uint amount;
@@ -34,7 +34,7 @@ contract AlphaEscrow is ReentrancyGuard {
   address public creamGovernor;
   uint public nextReceiptId;
   mapping(uint => WithdrawReceipt) public receipts;
-  uint public emergencyRequestTime;
+  uint public lastResortRequestTime;
 
   modifier onlyAlphaGov() {
     require(msg.sender == alphaGovernor, 'only Alpha governor');
@@ -114,29 +114,29 @@ contract AlphaEscrow is ReentrancyGuard {
     emit Unlock(alphaGovernor, _amount);
   }
 
-  /// @dev Emergency withdraw ALPHA from this contract by ALPHA governor
-  function requestEmergencyWithdraw() external nonReentrant onlyAlphaGov {
-    emergencyRequestTime = block.timestamp;
-    emit RequestEmergency(msg.sender);
+  /// @dev The last resort to withdraw ALPHA from this contract by ALPHA governor
+  function requestLastResort() external nonReentrant onlyAlphaGov {
+    lastResortRequestTime = block.timestamp;
+    emit RequestLastResort(msg.sender);
   }
 
-  /// @dev Cancel emergency withdraw ALPHA by CREAM or ALPHA governor
-  function cancelEmergencyWithdraw() external nonReentrant onlyGov {
-    emergencyRequestTime = 0;
-    emit CancelEmergency(msg.sender);
+  /// @dev Cancel the last resort to withdraw ALPHA by CREAM or ALPHA governor
+  function cancelLastResort() external nonReentrant onlyGov {
+    lastResortRequestTime = 0;
+    emit CancelLastResort(msg.sender);
   }
 
-  /// @dev Claim emergency withdraw ALPHA by ALPHA governor
-  function claimEmergencyWithdraw() external nonReentrant onlyAlphaGov {
+  /// @dev Claim withdrawn ALPHA by ALPHA governor
+  function claimLastResort() external nonReentrant onlyAlphaGov {
     require(
-      emergencyRequestTime > 0 &&
-        block.timestamp >= emergencyRequestTime.add(EMERGENCY_WITHDRAW_TIMELOCK_DURATION),
+      lastResortRequestTime > 0 &&
+        block.timestamp >= lastResortRequestTime.add(LAST_RESORT_TIMELOCK_DURATION),
       'invalid time to claim requested ALPHA'
     );
-    emergencyRequestTime = 0;
+    lastResortRequestTime = 0;
     uint amount = alpha.balanceOf(address(this));
     alpha.safeTransfer(msg.sender, amount);
-    emit ClaimEmergenty(msg.sender, amount);
+    emit ClaimLastResort(msg.sender, amount);
   }
 
   /// @dev Recover any ERC20 token except ALPHA from this contract
